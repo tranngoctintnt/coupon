@@ -15,11 +15,9 @@ const CheckCoupons = () => {
   const [searchText, setSearchText] = useState("");
   const [pagination, setPagination] = useState({
     current: 1,
-    pageSize: 15,
+    pageSize: 3,
     total: 0,
   });
-
-  console.log(coupons);
 
   // const fetchData = useCallback(
   //   async (search = "", page = 1) => {
@@ -76,7 +74,6 @@ const CheckCoupons = () => {
 
         const couponData = response.data.data || response.data || [];
         setCoupons(couponData);
-        console.log('data',couponData);
         setPagination({
           ...pagination,
           current: response.data.page || page,
@@ -252,7 +249,30 @@ const CheckCoupons = () => {
                 <Button type="primary">Import from Excel</Button>
               </Upload>
             </Space>
-            
+            {searchText === "" ? (
+              <>
+                <div className="searchBox w-[600px] px-8 mb-4  flex items-center relative p-2">
+                  <input
+                    value={searchText}
+                    onChange={(e) => setSearchText(e.target.value)}
+                    type="text"
+                    placeholder="Search for account..."
+                    className="w-full text-[18px] px-6 rounded-[6px]  !bg-[#f1f1f1] h-12 focus:outline-none bg-inherit "
+                  />
+                </div>
+                <Table
+                  rowKey="Id"
+                  columns={columns}
+                  dataSource={[]}
+                  pagination={pagination}
+                  loading={loading}
+                  onChange={handleTableChange}
+                  size="middle"
+                  className="!bg-white border px-5 rounded-md"
+                />
+              </>
+            ) : (
+              <>
                 <div className="searchBox w-[600px] px-8 mb-4  flex items-center relative p-2">
                   <input
                     value={searchText}
@@ -272,7 +292,8 @@ const CheckCoupons = () => {
                   size="middle"
                   className="!bg-white border px-5 rounded-md"
                 />
-             
+              </>
+            )}
           </div>
         </div>
       </div>
