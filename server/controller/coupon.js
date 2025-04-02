@@ -26,9 +26,9 @@ app.use(express.json());
 
 const importFromExcel = async (req, res) => {
     try {
-        const { CodeCoupon, Phone, Email, IsActive } = req.body;
+        const {NameCustomer, CodeCoupon, Phone, Email, IsActive } = req.body;
     
-        if (!CodeCoupon || !Phone || !Email) {
+        if (!NameCustomer || !CodeCoupon || !Phone || !Email) {
           return res.status(400).json({ success: false, message: 'All fields are required' });
         }
         if (!/^\d{10}$/.test(Phone)) {
@@ -37,16 +37,18 @@ const importFromExcel = async (req, res) => {
     
         const pool = await poolPromise;
         const result = await pool.request()
+        .input('NameCustomer', sql.NVarChar, NameCustomer)
           .input('CodeCoupon', sql.NVarChar, CodeCoupon)
           .input('Phone', sql.Char(10), Phone)
           .input('Email', sql.NVarChar, Email)
           .input('IsActive', sql.Bit, IsActive !== undefined ? IsActive : 0)
-          .query('INSERT INTO CheckCoupon (CodeCoupon, Phone, Email, IsActive, CreatedAt) VALUES (@CodeCoupon, @Phone, @Email, @IsActive, GETDATE()); SELECT SCOPE_IDENTITY() as id');
+          .query('INSERT INTO CheckCoupon (NameCustomer,CodeCoupon, Phone, Email, IsActive, CreatedAt) VALUES (@NameCustomer,@CodeCoupon, @Phone, @Email, @IsActive, GETDATE()); SELECT SCOPE_IDENTITY() as id');
     
         res.status(201).json({
           success: true,
           data: {
             Id: result.recordset[0].id,
+            NameCustomer,
             CodeCoupon,
             Phone,
             Email,
@@ -86,9 +88,9 @@ const getAllCoupon = async(req, res) =>{
 }
 const editStatusCoupon = async (req, res) => {
     try {
-      const { CodeCoupon, Phone, Email, IsActive } = req.body;
+      const {NameCustomer, CodeCoupon, Phone, Email, IsActive } = req.body;
   
-      if (!CodeCoupon || !Phone || !Email || IsActive === undefined) {
+      if (!NameCustomer || !CodeCoupon || !Phone || !Email || IsActive === undefined) {
         return res.status(400).json({ success: false, message: 'All fields are required' });
       }
       if (!/^\d{10}$/.test(Phone)) {
@@ -98,11 +100,12 @@ const editStatusCoupon = async (req, res) => {
       const pool = await poolPromise;
       const result = await pool.request()
         .input('Id', sql.Int, req.params.id)
+        .input('NameCustomer', sql.NVarChar, NameCustomer)
         .input('CodeCoupon', sql.NVarChar, CodeCoupon)
         .input('Phone', sql.Char(10), Phone)
         .input('Email', sql.NVarChar, Email)
         .input('IsActive', sql.Bit, IsActive)
-        .query('UPDATE CheckCoupon SET CodeCoupon = @CodeCoupon, Phone = @Phone, Email = @Email, IsActive = @IsActive, UpdateAt = GETDATE() WHERE Id = @Id');
+        .query('UPDATE CheckCoupon SET NameCustomer = @NameCustomer, CodeCoupon = @CodeCoupon, Phone = @Phone, Email = @Email, IsActive = @IsActive, UpdateAt = GETDATE() WHERE Id = @Id');
   
       if (result.rowsAffected[0] === 0) {
         return res.status(404).json({ success: false, message: 'Coupon not found' });
@@ -128,11 +131,11 @@ const searchCoupon = async (req, res) => {
           .input('limit', sql.Int, parseInt(limit))
           .query(`
             SELECT * FROM CheckCoupon 
-            WHERE CodeCoupon LIKE @search OR Phone LIKE @search OR Email LIKE @search
+            WHERE NameCustomer LIKE @search OR CodeCoupon LIKE @search OR Phone LIKE @search OR Email LIKE @search
             ORDER BY Id
             OFFSET @offset ROWS FETCH NEXT @limit ROWS ONLY;
             SELECT COUNT(*) as total FROM CheckCoupon 
-            WHERE CodeCoupon LIKE @search OR Phone LIKE @search OR Email LIKE @search;
+            WHERE NameCustomer LIKE @search OR CodeCoupon LIKE @search OR Phone LIKE @search OR Email LIKE @search;
           `);
     
         const coupons = result.recordsets[0];
@@ -156,7 +159,7 @@ const userSearchCoupon = async (req, res) => {
     let query = "SELECT TOP 50 * FROM CheckCoupon"; // Giới hạn 50 kết quả
     let params = [];
     if (search) {
-      query += ` WHERE Phone LIKE @search AND isActive = 0`;
+      query += ` WHERE NameCustomer LIKE @search OR Email LIKE @search OR Phone LIKE @search AND isActive = 0`;
       params.push({ name: "search", type: sql.NVarChar, value: `%${search}%` });
     }
 

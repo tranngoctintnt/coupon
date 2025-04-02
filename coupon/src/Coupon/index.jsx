@@ -10,6 +10,11 @@ const Coupon = () => {
 
   const columns = [
     {
+      title: "Tên Khách Hàng",
+      dataIndex: "NameCustomer",
+      key: "NameCustomer",
+    },
+    {
       title: "Coupon Code",
       dataIndex: "CodeCoupon",
       key: "CodeCoupon",
@@ -29,18 +34,20 @@ const Coupon = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:3000/api/coupon-user?search=${searchText}`);
+      const response = await fetch(`http://localhost:5000/api/coupon-user?search=${searchText}`);
       const data = await response.json();
       if (data.length === 0) {
-        message.error("Số điện thoại không trong danh sách áp dụng coupon hoặc bạn đã sử dụng.");
+        message.error("Bạn không trong danh sách áp dụng coupon hoặc bạn đã sử dụng.");
+        setCoupons([]); // Xóa dữ liệu cũ nếu không tìm thấy
       } else {
         setCoupons(data);
       }
       // const response = await axios.get(`${API_URL}?search=${query}`);
       // setCoupons(response.data);
-      // setError("");
+      setError("");
     } catch (err) {
       setError(err.response.data || "Error fetching data");
+      setCoupons([]);
     }
     setLoading(false);
   };
@@ -51,10 +58,9 @@ const Coupon = () => {
   };
   const handleSearch = () => {
    
+    if (!searchText.trim()) {
+      message.warning("Vui lòng nhập thông tin để tìm kiếm!");
       setCoupons([]);
-
-if (searchText.length !== 10) {
-      message.error("Số điện thoại phải có đúng 10 số!"); // Hiển thị cảnh báo
       return;
     }
     fetchData(searchText); // Chỉ gọi API khi số điện thoại hợp lệ
@@ -70,8 +76,8 @@ if (searchText.length !== 10) {
           <h1 className="text-xl sm:text-2xl font-bold">Suối Tiên</h1>
           <nav className="flex gap-4">
             <a href="#" className="hover:underline">Trang chủ</a>
-            <a href="#" className="hover:underline">Hỗ trợ</a>
-            <a href="#" className="hover:underline">Liên hệ</a>
+            <a href="https://www.facebook.com/SuoiTienThemePark" className="hover:underline">Hỗ trợ</a>
+            <a href="https://www.facebook.com/SuoiTienThemePark" className="hover:underline">Liên hệ</a>
           </nav>
         </div>
       </header>
@@ -94,21 +100,24 @@ if (searchText.length !== 10) {
               {/* Search Section */}
               <div className="flex flex-col sm:flex-row gap-4 mb-6">
                 <Input
+                  // value={searchText}
                   value={searchText}
-                  onChange={(e) => {
-                    const inputVal = e.target.value.replace(/\D/g, "");
-                    if (inputVal.length <= 10) {
-                      setSearchText(inputVal);
-                    }
-                  }}
-                  maxLength={10}
+                  onChange={(e) => setSearchText(e.target.value)} // Cập nhật searchText
                   onKeyPress={handleKeyPress}
-                  placeholder="Nhập số điện thoại (10 số)"  
-                  prefix={<SearchOutlined className="text-gray-400" />}
-                  className="rounded-md h-12 text-lg"
-                  addonAfter={
-                    <span className="text-gray-500">{searchText.length}/10</span>
-                  }
+                  // onChange={(e) => {
+                  //   const inputVal = e.target.value.replace(/\D/g, "");
+                  //   if (inputVal.length <= 10) {
+                  //     setSearchText(inputVal);
+                  //   }
+                  // }}
+                  // maxLength={10}
+                  // onKeyPress={handleKeyPress}
+                  // placeholder="Nhập số điện thoại (10 số)"  
+                  // prefix={<SearchOutlined className="text-gray-400" />}
+                  // className="rounded-md h-12 text-lg"
+                  // addonAfter={
+                  //   <span className="text-gray-500">{searchText.length}/10</span>
+                  // }
                 />
                 <Button
                   type="primary"
@@ -131,9 +140,9 @@ if (searchText.length !== 10) {
               <div className="mb-6 p-4 bg-blue-50 rounded-md">
                 <h3 className="text-lg font-semibold text-blue-800">Hướng dẫn sử dụng</h3>
                 <ul className="list-disc pl-5 text-gray-700">
-                  <li>Nhập số điện thoại 10 chữ số để tra cứu.</li>
+                  <li>Nhập họ và tên, email hoặc số điện thoại để tra cứu.</li>
                   <li>Coupon chỉ áp dụng cho tài khoản chưa sử dụng trước đó.</li>
-                  <li>Liên hệ hỗ trợ nếu gặp vấn đề: <a href="mailto:support@example.com" className="text-blue-600">support@example.com</a></li>
+                  <li>Liên hệ hỗ trợ nếu gặp vấn đề: <a href="https://www.facebook.com/SuoiTienThemePark" className="text-blue-600">https://www.facebook.com/SuoiTienThemePark</a></li>
                 </ul>
               </div>
 

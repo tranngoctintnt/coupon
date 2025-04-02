@@ -6,7 +6,7 @@ import "./style.css";
 import { useCallback } from "react";
 import debounce from "lodash/debounce";
 
-const API_URL = "http://localhost:3000/api/coupon";
+// const API_URL = 'https://cp.suoitien.vn/api/coupon';
 
 const CheckCoupons = () => {
   const [coupons, setCoupons] = useState([]);
@@ -19,51 +19,14 @@ const CheckCoupons = () => {
     total: 0,
   });
 
-  console.log(coupons);
+  // console.log(coupons);
 
-  // const fetchData = useCallback(
-  //   async (search = "", page = 1) => {
-  //     setLoading(true);
-  //     try {
-  //       const response = await axios.get(
-  //         "http://localhost:3000/api/coupon/search",
-  //         {
-  //           params: {
-  //             search: search,
-  //             page: page,
-  //             limit: pagination.pageSize,
-  //           },
-  //           withCredentials: true,
-  //         }
-  //       );
-
-  //       // const rawData = Array.isArray(response.data) ? response.data : [];
-  //       // console.log(response.data);
-  //       // console.log(rawData.data);
-
-  //       setCoupons(response.data.data);
-  //       setPagination({
-  //         ...pagination,
-  //         current: response.data.page,
-  //         total: response.data.total,
-  //       });
-  //     } catch (error) {
-  //       console.error("Failed to fetch coupon:", error);
-  //       if (error.response?.status === 401 || error.response?.status === 403) {
-  //         window.location.href = "/";
-  //       }
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   },
-  //   [pagination.pageSize]
-  // );
 
   const fetchData = useCallback(
     async (search = "", page = 1) => {
       setLoading(true);
       try {
-        const response = await axios.get(`${API_URL}/search`, {
+        const response = await axios.get('http://localhost:5000/api/coupon/search', {
           params: {
             search: search,
             page: page,
@@ -72,11 +35,11 @@ const CheckCoupons = () => {
           withCredentials: true,
         });
 
-        console.log("API Response:", response.data);
+        // console.log("API Response:", response.data);
 
         const couponData = response.data.data || response.data || [];
         setCoupons(couponData);
-        console.log('data',couponData);
+        // console.log('data',couponData);
         setPagination({
           ...pagination,
           current: response.data.page || page,
@@ -121,14 +84,18 @@ const CheckCoupons = () => {
   const handleSwitchChange = async (checked, record) => {
     try {
       setLoading(true);
-      await axios.put(`${API_URL}/${record.Id}`, {
+      await axios.put(`http://localhost:5000/api/coupon/${record.Id}`, {
+        NameCustomer:record.NameCustomer,
         CodeCoupon: record.CodeCoupon,
         Phone: record.Phone,
         Email: record.Email,
         IsActive: checked ? 1 : 0,
       });
       message.success("Status updated successfully");
+      setTimeout(() => {
       fetchData(searchText, pagination.current);
+        
+      }, 100);
     } catch (err) {
       message.error(err.response?.data?.message || "Error updating status");
     } finally {
@@ -153,6 +120,9 @@ const CheckCoupons = () => {
               `Row ${index + 2}: Phone must be exactly 10 digits`
             );
           }
+          if (!row["Name"]) {
+            throw new Error(`Row ${index + 2}: Name is required`);
+          }
           if (!row["Coupon Code"]) {
             throw new Error(`Row ${index + 2}: Coupon Code is required`);
           }
@@ -161,6 +131,7 @@ const CheckCoupons = () => {
           }
 
           return {
+            NameCustomer: row["Name"],
             CodeCoupon: row["Coupon Code"],
             Phone: phone,
             Email: row["Email"],
@@ -172,7 +143,7 @@ const CheckCoupons = () => {
         const errors = [];
         for (const [index, coupon] of formattedData.entries()) {
           try {
-            await axios.post(API_URL, coupon);
+            await axios.post('http://localhost:5000/api/coupon', coupon);
           } catch (err) {
             errors.push(
               `Row ${index + 2}: ${err.response?.data?.message || "Error"}`
@@ -196,6 +167,11 @@ const CheckCoupons = () => {
     return false;
   };
   const columns = [
+    {
+      title: "Name",
+      dataIndex: "NameCustomer",
+      key: "NameCustomer",
+    },
     {
       title: "Coupon Code",
       dataIndex: "CodeCoupon",
